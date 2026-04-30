@@ -70,16 +70,13 @@
   }
 
   /* PAGE SYSTEM */
-  .page { display: none; min-height: 100vh; padding-top: 52px; }
-  .page.active { display: block; }
+  .page { display: block; min-height: 100vh; padding-top: 52px; scroll-margin-top: 52px; }
 
   /* ===== LANDING PAGE ===== */
   #page-landing {
     background: var(--dark-bg);
     color: var(--paper);
-    display: none;
   }
-  #page-landing.active { display: block; }
 
   .hero {
     min-height: 100vh;
@@ -594,14 +591,15 @@
     margin: 0;
   }
 
-  /* Fade-in animation */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+  /* Scroll-triggered fade-in */
+  .page {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
   }
-  .page.active .page-hero,
-  .page.active .content-area {
-    animation: fadeIn 0.4s ease forwards;
+  .page.visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   @media (max-width: 768px) {
@@ -620,17 +618,17 @@
 <nav>
   <div class="nav-logo">Islamophobia in China</div>
   <div class="nav-links">
-    <button onclick="showPage('landing')" class="active" id="btn-landing">Home</button>
-    <button onclick="showPage('profile')" id="btn-profile">Country Profile</button>
-    <button onclick="showPage('history')" id="btn-history">History</button>
-    <button onclick="showPage('legal')" id="btn-legal">Legal</button>
-    <button onclick="showPage('political')" id="btn-political">Political</button>
-    <button onclick="showPage('surveillance')" id="btn-surveillance">Surveillance</button>
-    <button onclick="showPage('detention')" id="btn-detention">Detention</button>
-    <button onclick="showPage('economic')" id="btn-economic">Economic</button>
-    <button onclick="showPage('media')" id="btn-media">Media</button>
-    <button onclick="showPage('counter')" id="btn-counter">Counter-Orgs</button>
-    <button onclick="showPage('works')" id="btn-works">Works Cited</button>
+    <button onclick="scrollTo('landing')" class="active" id="btn-landing">Home</button>
+    <button onclick="scrollTo('profile')" id="btn-profile">Country Profile</button>
+    <button onclick="scrollTo('history')" id="btn-history">History</button>
+    <button onclick="scrollTo('legal')" id="btn-legal">Legal</button>
+    <button onclick="scrollTo('political')" id="btn-political">Political</button>
+    <button onclick="scrollTo('surveillance')" id="btn-surveillance">Surveillance</button>
+    <button onclick="scrollTo('detention')" id="btn-detention">Detention</button>
+    <button onclick="scrollTo('economic')" id="btn-economic">Economic</button>
+    <button onclick="scrollTo('media')" id="btn-media">Media</button>
+    <button onclick="scrollTo('counter')" id="btn-counter">Counter-Orgs</button>
+    <button onclick="scrollTo('works')" id="btn-works">Works Cited</button>
   </div>
 </nav>
 
@@ -1096,13 +1094,30 @@
 </div>
 
 <script>
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.getElementById('btn-' + id).classList.add('active');
-  window.scrollTo(0, 0);
+// Smooth scroll to section
+function scrollTo(id) {
+  document.getElementById('page-' + id).scrollIntoView({ behavior: 'smooth' });
 }
+
+// Highlight active nav button + fade in sections on scroll
+const sections = document.querySelectorAll('.page');
+const navButtons = document.querySelectorAll('.nav-links button');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      // Fade in
+      entry.target.classList.add('visible');
+      // Highlight nav
+      const id = entry.target.id.replace('page-', '');
+      navButtons.forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-' + id);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+  });
+}, { threshold: 0.1 });
+
+sections.forEach(section => observer.observe(section));
 </script>
 </body>
 </html>
